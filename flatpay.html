@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlatPay — Shared Living, Sorted</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0f14;
+    --bg2: #161820;
+    --bg3: #1e2028;
+    --border: #2a2d38;
+    --accent: #c8f264;
+    --accent2: #64a4f2;
+    --accent3: #f264a0;
+    --text: #eef0f8;
+    --muted: #6b6f82;
+    --paid: #64f2a0;
+    --overdue: #f26464;
+    --partial: #f2c464;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+  #app { min-height: 100vh; }
+
+  .heading { font-family: 'Syne', sans-serif; font-weight: 800; }
+  .mono { font-family: 'DM Mono', monospace; }
+
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  .center-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 2rem; }
+
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; width: 100%; max-width: 420px; }
+
+  .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; color: var(--accent); letter-spacing: -0.5px; }
+  .logo span { color: var(--text); }
+
+  label { display: block; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; margin-top: 1.2rem; }
+
+  input, select { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+  input:focus, select:focus { border-color: var(--accent); }
+  input::placeholder { color: var(--muted); }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; letter-spacing: 0.02em; border: none; cursor: pointer; transition: all 0.15s; }
+  .btn-primary { background: var(--accent); color: #0e0f14; }
+  .btn-primary:hover { background: #d4f570; transform: translateY(-1px); }
+  .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-ghost { background: transparent; color: var(--muted); padding: 0.5rem; }
+  .btn-ghost:hover { color: var(--text); }
+  .btn-danger { background: transparent; border: 1px solid var(--overdue); color: var(--overdue); }
+  .btn-full { width: 100%; margin-top: 1.5rem; }
+  .btn-sm { padding: 0.4rem 0.9rem; font-size: 0.8rem; border-radius: 8px; }
+
+  .tabs { display: flex; gap: 0.5rem; background: var(--bg3); border-radius: 12px; padding: 4px; margin-bottom: 1.5rem; }
+  .tab { flex: 1; padding: 0.6rem; border-radius: 9px; font-family: 'Syne', sans-serif; font-weight: 600; font-size: 0.85rem; text-align: center; cursor: pointer; color: var(--muted); transition: all 0.2s; border: none; background: transparent; }
+  .tab.active { background: var(--bg2); color: var(--accent); }
+
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); background: var(--bg2); position: sticky; top: 0; z-index: 10; }
+  .topbar-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; }
+
+  .page-content { flex: 1; padding: 1.5rem; max-width: 680px; margin: 0 auto; width: 100%; }
+
+  .expense-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+  .expense-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 1rem 1.25rem; cursor: pointer; transition: border-color 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: space-between; }
+  .expense-item:hover { border-color: var(--accent); transform: translateX(2px); }
+  .expense-item-left { display: flex; flex-direction: column; gap: 0.25rem; }
+  .expense-item-name { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 0.95rem; }
+  .expense-item-meta { font-size: 0.78rem; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .expense-item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.3rem; }
+  .expense-item-amount { font-family: 'DM Mono', monospace; font-weight: 500; font-size: 1.1rem; }
+
+  .status-badge { font-size: 0.7rem; font-weight: 500; padding: 0.2rem 0.6rem; border-radius: 20px; font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.05em; }
+  .status-paid { background: rgba(100,242,160,0.15); color: var(--paid); }
+  .status-overdue { background: rgba(242,100,100,0.15); color: var(--overdue); }
+  .status-partial { background: rgba(242,196,100,0.15); color: var(--partial); }
+  .status-notstarted { background: rgba(107,111,130,0.2); color: var(--muted); }
+
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; margin-top: 1.5rem; }
+  .section-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; }
+
+  /* ---- FLAT HERO CARD ---- */
+  .flat-hero {
+    background: linear-gradient(145deg, #1a1d2e, #0e1020);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .flat-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 80% 20%, rgba(100,164,242,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .flat-hero-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.2rem;
+    margin-bottom: 1.25rem;
+    color: var(--text);
+  }
+
+  /* SVG flat illustration */
+  .flat-illustration { display: flex; justify-content: center; margin-bottom: 1.25rem; }
+  .flat-illustration svg { width: 100%; max-width: 260px; height: auto; }
+
+  .flat-totals-row {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+  }
+  .total-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; margin-bottom: 0.2rem; }
+  .total-amount { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.9rem; color: var(--accent); line-height: 1; }
+  .your-share-amount { font-family: 'DM Mono', monospace; font-size: 1.2rem; color: var(--accent2); }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(14,15,20,0.85); backdrop-filter: blur(6px); z-index: 100; align-items: flex-end; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 20px 20px 0 0; padding: 1.5rem; width: 100%; max-width: 640px; max-height: 85vh; overflow-y: auto; animation: slideUp 0.25s ease; }
+  @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 1.5rem; }
+  .modal-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.2rem; margin-bottom: 1rem; }
+
+  .contributor-item { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: var(--bg3); border-radius: 10px; margin-bottom: 0.5rem; }
+  .contributor-name { font-weight: 500; font-size: 0.9rem; }
+  .contributor-amount { font-family: 'DM Mono', monospace; font-size: 0.9rem; color: var(--accent); }
+
+  .invite-code-box { display: flex; align-items: center; justify-content: space-between; background: var(--bg3); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-top: 1rem; }
+  .invite-code-text { font-family: 'DM Mono', monospace; font-size: 1.5rem; font-weight: 500; letter-spacing: 0.15em; color: var(--accent); }
+
+  .empty-state { text-align: center; padding: 3rem 1rem; color: var(--muted); }
+  .empty-state-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .empty-state-text { font-size: 0.9rem; line-height: 1.6; }
+
+  .divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+  .error-msg { color: var(--overdue); font-size: 0.8rem; margin-top: 0.5rem; }
+  .success-msg { color: var(--paid); font-size: 0.8rem; margin-top: 0.5rem; }
+
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: var(--bg); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+  .avatar-lg { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: var(--bg); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; flex-shrink: 0; }
+  .avatar-row { display: flex; align-items: center; gap: 0.75rem; }
+
+  .progress-bar-wrap { background: var(--bg3); border-radius: 999px; height: 6px; flex: 1; overflow: hidden; }
+  .progress-bar-fill { height: 100%; border-radius: 999px; background: var(--accent); transition: width 0.3s; }
+
+  /* Profile icon button */
+  .profile-btn {
+    position: relative;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.85rem;
+    color: var(--bg);
+    transition: transform 0.15s;
+  }
+  .profile-btn:hover { transform: scale(1.08); }
+
+  /* Invite badge */
+  .badge-wrap { position: relative; }
+  .red-badge {
+    position: absolute;
+    top: -5px; right: -5px;
+    background: var(--overdue);
+    color: white;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem; font-weight: 500;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--bg2);
+    animation: pulse 1.5s ease infinite;
+  }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+
+  /* Bottom nav */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--bg2); border-top: 1px solid var(--border);
+    display: flex; padding: 0.75rem 1rem; gap: 0.5rem;
+    justify-content: center;
+  }
+  .bottom-nav-inner { display: flex; gap: 0.5rem; width: 100%; max-width: 680px; }
+
+  /* Join request item */
+  .join-request-item {
+    background: rgba(242,100,100,0.08);
+    border: 1px solid rgba(242,100,100,0.3);
+    border-radius: 12px; padding: 1rem;
+    margin-bottom: 0.75rem;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  /* Account page specific */
+  .payment-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: var(--bg3); border-radius: 10px; margin-bottom: 0.5rem;
+  }
+
+  /* Auth slogan */
+  .slogan {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-top: 0.35rem;
+    letter-spacing: 0.02em;
+  }
+
+  /* Help tooltip */
+  .help-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.75rem; font-weight: 700;
+    cursor: pointer;
+    background: var(--bg3);
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .help-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .help-alert {
+    background: var(--bg3);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 0.82rem;
+    color: var(--text);
+    line-height: 1.55;
+    margin-top: 0.75rem;
+    animation: fadeIn 0.2s ease;
+  }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+
+  @media (max-width: 480px) {
+    .page-content { padding: 1rem; }
+    .topbar { padding: 0.75rem 1rem; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ SCREEN: AUTH ============ -->
+  <div id="screen-auth" class="screen active">
+    <div class="center-wrap">
+      <div style="text-align:center; margin-bottom:2rem;">
+        <div class="logo">Flat<span>Pay</span></div>
+        <div class="slogan">Split the bills, not the friendship.</div>
+      </div>
+      <div class="card">
+        <div class="tabs">
+          <button class="tab active" onclick="switchAuthTab('login')">Sign In</button>
+          <button class="tab" onclick="switchAuthTab('register')">Register</button>
+        </div>
+
+        <div id="auth-login">
+          <label>Username</label>
+          <input type="text" id="login-username" placeholder="your username" autocomplete="username">
+          <label>Password</label>
+          <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+          <div id="login-error" class="error-msg" style="display:none"></div>
+          <div style="display:flex; gap:0.75rem; margin-top:1.5rem;">
+            <button class="btn btn-primary" style="flex:1" onclick="doLogin()">Sign In</button>
+            <button class="help-btn" onclick="toggleHelp()" title="What is FlatPay?">?</button>
+          </div>
+          <div id="help-alert" class="help-alert" style="display:none">
+            <strong style="color:var(--accent); font-family:'Syne',sans-serif;">Welcome to FlatPay 👋</strong><br>
+            FlatPay helps flatmates manage shared expenses — rent, utilities, subscriptions, and more. Create a flat, add your bills, and track who's paying what. Invite your flatmates with a share code and stay on top of every payment together.
+          </div>
+        </div>
+
+        <div id="auth-register" style="display:none">
+          <label>Username</label>
+          <input type="text" id="reg-username" placeholder="choose a username" autocomplete="username">
+          <label>Password</label>
+          <input type="password" id="reg-password" placeholder="choose a password" autocomplete="new-password">
+          <div id="reg-error" class="error-msg" style="display:none"></div>
+          <button class="btn btn-primary btn-full" onclick="doRegister()">Create Account</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: FLAT CHOICE ============ -->
+  <div id="screen-flat-choice" class="screen">
+    <div class="center-wrap">
+      <div style="text-align:center; margin-bottom:2rem;">
+        <div class="logo">Flat<span>Pay</span></div>
+        <p style="color:var(--muted); font-size:0.85rem; margin-top:0.5rem;">Welcome, <span id="welcome-name" style="color:var(--text)"></span></p>
+      </div>
+      <div class="card">
+        <div class="heading" style="font-size:1.3rem; margin-bottom:0.5rem;">Your Flat</div>
+        <p style="color:var(--muted); font-size:0.85rem; margin-bottom:1.5rem;">Create a new flat or join one with an invite code.</p>
+        <button class="btn btn-primary btn-full" style="margin-top:0" onclick="showScreen('screen-create-flat')">+ Create a Flat</button>
+        <div class="divider"></div>
+        <label>Invite Code</label>
+        <input type="text" id="invite-code-input" placeholder="e.g. FLAT-ABCD" style="text-transform:uppercase; letter-spacing:0.1em;">
+        <label>Your name / room</label>
+        <input type="text" id="join-room-input" placeholder="e.g. Room 2 or Jamie">
+        <div id="join-error" class="error-msg" style="display:none"></div>
+        <button class="btn btn-secondary btn-full" onclick="doRequestJoin()">Request to Join</button>
+        <div class="divider"></div>
+        <button class="btn btn-ghost" onclick="doLogout()" style="width:100%; color:var(--muted); font-size:0.85rem;">Sign out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: JOIN PENDING ============ -->
+  <div id="screen-join-pending" class="screen">
+    <div class="center-wrap">
+      <div class="card" style="text-align:center;">
+        <div style="font-size:3rem; margin-bottom:1rem;">⏳</div>
+        <div class="heading" style="font-size:1.2rem; margin-bottom:0.75rem;">Request Sent!</div>
+        <p style="color:var(--muted); font-size:0.85rem; line-height:1.6; margin-bottom:1.5rem;">
+          Your request to join <strong id="pending-flat-name" style="color:var(--text)"></strong> has been sent.<br>
+          A current member needs to approve your request. Check back soon!
+        </p>
+        <button class="btn btn-secondary btn-full" style="margin-top:0" onclick="checkPendingApproval()">Check Status</button>
+        <div id="pending-status" style="margin-top:0.75rem; font-size:0.8rem; color:var(--muted);"></div>
+        <div class="divider"></div>
+        <button class="btn btn-ghost" onclick="doLogout()" style="width:100%; color:var(--muted); font-size:0.85rem;">Sign out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: CREATE FLAT ============ -->
+  <div id="screen-create-flat" class="screen">
+    <div class="topbar">
+      <button class="btn btn-ghost" onclick="showScreen('screen-flat-choice')">← Back</button>
+      <span class="topbar-title">Create Flat</span>
+      <span></span>
+    </div>
+    <div class="page-content" style="max-width:500px; margin:0 auto;">
+      <label>Flat Name</label>
+      <input type="text" id="flat-name-input" placeholder="e.g. 42 Maple Street">
+      <label>Your Room / Name in Flat</label>
+      <input type="text" id="flat-room-input" placeholder="e.g. Room 1 or Sarah">
+      <label>Default Period</label>
+      <select id="flat-period-select">
+        <option value="monthly">Monthly</option>
+        <option value="weekly">Weekly</option>
+      </select>
+      <div id="create-flat-error" class="error-msg" style="display:none"></div>
+      <button class="btn btn-primary btn-full" onclick="doCreateFlat()">Create Flat</button>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: DASHBOARD ============ -->
+  <div id="screen-dashboard" class="screen">
+    <div class="topbar">
+      <div class="logo" style="font-size:1.1rem;">Flat<span>Pay</span></div>
+      <div style="display:flex; align-items:center; gap:0.75rem;">
+        <div class="badge-wrap" id="invite-badge-wrap">
+          <button class="btn btn-sm btn-secondary" onclick="showInviteModal()" id="invite-btn">Invite</button>
+          <div class="red-badge" id="invite-badge" style="display:none">0</div>
+        </div>
+        <button class="profile-btn" id="profile-btn" onclick="showScreen('screen-account')"></button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <!-- Flat Hero -->
+      <div class="flat-hero">
+        <div class="flat-hero-name" id="hero-flat-name">My Flat</div>
+        <div class="flat-illustration">
+          <svg viewBox="0 0 260 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Sky gradient -->
+            <defs>
+              <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#1a1f3a"/>
+                <stop offset="100%" stop-color="#0e1020"/>
+              </linearGradient>
+              <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#2a2e42"/>
+                <stop offset="100%" stop-color="#1e2235"/>
+              </linearGradient>
+            </defs>
+            <!-- Ground -->
+            <rect x="0" y="100" width="260" height="20" fill="#131520"/>
+            <!-- Main building body -->
+            <rect x="40" y="45" width="180" height="58" rx="2" fill="url(#wallGrad)" stroke="#3a3f58" stroke-width="1"/>
+            <!-- Roof -->
+            <polygon points="30,46 130,10 230,46" fill="#2a2e42" stroke="#3a3f58" stroke-width="1"/>
+            <!-- Chimney -->
+            <rect x="160" y="18" width="14" height="22" rx="1" fill="#1e2235" stroke="#3a3f58" stroke-width="1"/>
+            <!-- Roof accent line -->
+            <line x1="30" y1="46" x2="230" y2="46" stroke="#c8f264" stroke-width="1.5" stroke-opacity="0.5"/>
+            <!-- Door -->
+            <rect x="109" y="72" width="22" height="31" rx="2" fill="#131520" stroke="#3a3f58" stroke-width="1"/>
+            <circle cx="128" cy="88" r="2" fill="#c8f264" opacity="0.8"/>
+            <!-- Windows row 1 -->
+            <rect x="55" y="57" width="24" height="18" rx="2" fill="#131520" stroke="#3a3f58" stroke-width="1"/>
+            <line x1="67" y1="57" x2="67" y2="75" stroke="#2a2e42" stroke-width="1"/>
+            <line x1="55" y1="66" x2="79" y2="66" stroke="#2a2e42" stroke-width="1"/>
+            <!-- window glow left -->
+            <rect x="55" y="57" width="11" height="9" rx="1" fill="#c8f264" opacity="0.12"/>
+
+            <rect x="93" y="57" width="24" height="18" rx="2" fill="#131520" stroke="#3a3f58" stroke-width="1"/>
+            <line x1="105" y1="57" x2="105" y2="75" stroke="#2a2e42" stroke-width="1"/>
+            <line x1="93" y1="66" x2="117" y2="66" stroke="#2a2e42" stroke-width="1"/>
+            <!-- window glow mid lit -->
+            <rect x="93" y="57" width="11" height="9" rx="1" fill="#64a4f2" opacity="0.25"/>
+            <rect x="106" y="66" width="11" height="9" rx="1" fill="#64a4f2" opacity="0.18"/>
+
+            <rect x="143" y="57" width="24" height="18" rx="2" fill="#131520" stroke="#3a3f58" stroke-width="1"/>
+            <line x1="155" y1="57" x2="155" y2="75" stroke="#2a2e42" stroke-width="1"/>
+            <line x1="143" y1="66" x2="167" y2="66" stroke="#2a2e42" stroke-width="1"/>
+            <rect x="155" y="57" width="12" height="9" rx="1" fill="#c8f264" opacity="0.18"/>
+
+            <rect x="181" y="57" width="24" height="18" rx="2" fill="#131520" stroke="#3a3f58" stroke-width="1"/>
+            <line x1="193" y1="57" x2="193" y2="75" stroke="#2a2e42" stroke-width="1"/>
+            <line x1="181" y1="66" x2="205" y2="66" stroke="#2a2e42" stroke-width="1"/>
+            <!-- Stars -->
+            <circle cx="20" cy="15" r="1" fill="white" opacity="0.6"/>
+            <circle cx="240" cy="8" r="1.2" fill="white" opacity="0.5"/>
+            <circle cx="10" cy="35" r="0.8" fill="white" opacity="0.4"/>
+            <circle cx="248" cy="30" r="0.8" fill="white" opacity="0.4"/>
+            <circle cx="130" cy="4" r="0.9" fill="white" opacity="0.5"/>
+            <!-- Moon -->
+            <circle cx="220" cy="18" r="8" fill="#1e2235"/>
+            <circle cx="224" cy="15" r="6.5" fill="#131520"/>
+          </svg>
+        </div>
+        <div class="flat-totals-row">
+          <div>
+            <div class="total-label">Total <span id="total-period-label">Monthly</span></div>
+            <div class="total-amount" id="total-amount">$0.00</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="total-label">Your share</div>
+            <div class="your-share-amount" id="your-share">$0.00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recurring -->
+      <div class="section-header">
+        <span class="section-title">Recurring</span>
+        <button class="btn btn-sm btn-secondary" onclick="openAddExpenseModal('recurring')">+ Add</button>
+      </div>
+      <div class="expense-list" id="recurring-list"></div>
+
+      <!-- One-Off -->
+      <div class="section-header" style="margin-top:2rem;">
+        <span class="section-title">One-Off</span>
+        <button class="btn btn-sm btn-secondary" onclick="openAddExpenseModal('oneoff')">+ Add</button>
+      </div>
+      <div class="expense-list" id="oneoff-list"></div>
+
+      <div style="height:5rem;"></div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="bottom-nav-inner">
+        <button class="btn btn-secondary" style="flex:1; font-size:0.8rem;" onclick="showMembersModal()">👥 Members</button>
+        <div class="badge-wrap" style="flex:1;">
+          <button class="btn btn-secondary" style="width:100%; font-size:0.8rem;" onclick="showInviteModal()">🔗 Invite Code</button>
+          <div class="red-badge" id="invite-badge-bottom" style="display:none">0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: ACCOUNT ============ -->
+  <div id="screen-account" class="screen">
+    <div class="topbar">
+      <button class="btn btn-ghost" onclick="showScreen('screen-dashboard')">← Back</button>
+      <span class="topbar-title">My Account</span>
+      <button class="btn btn-sm btn-ghost" onclick="doLogout()" style="color:var(--muted); font-size:0.8rem;">Sign out</button>
+    </div>
+    <div class="page-content" style="max-width:500px; margin:0 auto;">
+
+      <!-- Profile section -->
+      <div style="display:flex; align-items:center; gap:1.25rem; padding:1.5rem 0; border-bottom:1px solid var(--border); margin-bottom:1.5rem;">
+        <div class="avatar-lg" id="account-avatar"></div>
+        <div>
+          <div class="heading" style="font-size:1.4rem;" id="account-username"></div>
+          <div style="color:var(--muted); font-size:0.85rem;" id="account-flat-name"></div>
+          <div style="color:var(--muted); font-size:0.8rem; font-family:'DM Mono',monospace; margin-top:0.2rem;" id="account-room"></div>
+        </div>
+      </div>
+
+      <!-- Upcoming payments -->
+      <div class="section-title" style="margin-bottom:0.75rem;">⏰ Upcoming / Overdue</div>
+      <div id="account-upcoming"></div>
+
+      <div class="divider"></div>
+
+      <!-- Completed payments -->
+      <div class="section-title" style="margin-bottom:0.75rem;">✅ Completed Payments</div>
+      <div id="account-completed"></div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ MODAL: ADD EXPENSE ============ -->
+<div class="modal-overlay" id="modal-add-expense" onclick="closeModalIfOutside(event,'modal-add-expense')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-add-expense-title">Add Expense</div>
+    <input type="hidden" id="add-expense-type">
+    <label>Name</label>
+    <input type="text" id="ae-name" placeholder="e.g. Rent, Netflix, Groceries">
+    <label>Amount ($)</label>
+    <input type="number" id="ae-amount" placeholder="0.00" min="0" step="0.01">
+    <div id="ae-period-wrap">
+      <label>Period</label>
+      <select id="ae-period">
+        <option value="monthly">Monthly</option>
+        <option value="weekly">Weekly</option>
+      </select>
+    </div>
+    <div id="ae-duedate-wrap" style="display:none">
+      <label>Due Date</label>
+      <input type="date" id="ae-duedate">
+    </div>
+    <div id="ae-error" class="error-msg" style="display:none"></div>
+    <div style="display:flex; gap:0.75rem; margin-top:1.5rem;">
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal('modal-add-expense')">Cancel</button>
+      <button class="btn btn-primary" style="flex:1" onclick="doAddExpense()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: EXPENSE DETAIL ============ -->
+<div class="modal-overlay" id="modal-expense-detail" onclick="closeModalIfOutside(event,'modal-expense-detail')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.25rem;">
+      <div class="modal-title" id="ed-name" style="margin-bottom:0"></div>
+      <button class="btn btn-ghost btn-sm btn-danger" onclick="doDeleteExpense()">Delete</button>
+    </div>
+    <div id="ed-meta" class="mono" style="color:var(--muted); font-size:0.8rem; margin-bottom:1rem;"></div>
+    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.25rem;">
+      <span id="ed-status" class="status-badge"></span>
+      <div style="flex:1;"><div class="progress-bar-wrap"><div class="progress-bar-fill" id="ed-progress" style="width:0%"></div></div></div>
+      <span id="ed-amounts" class="mono" style="font-size:0.8rem; color:var(--muted)"></span>
+    </div>
+    <div style="font-family:'Syne',sans-serif; font-weight:700; margin-bottom:0.75rem;">Contributors</div>
+    <div id="ed-contributors"></div>
+    <div class="divider"></div>
+    <div style="font-family:'Syne',sans-serif; font-weight:600; font-size:0.9rem; margin-bottom:0.75rem;">Add Contribution</div>
+    <label>Person (flat member)</label>
+    <select id="ec-person"></select>
+    <div style="display:flex; gap:0.75rem; margin-top:1rem;">
+      <div style="flex:1">
+        <label style="margin-top:0">Amount ($)</label>
+        <input type="number" id="ec-amount" placeholder="0.00" min="0" step="0.01" oninput="syncContribInput('amount')">
+      </div>
+      <div style="flex:1">
+        <label style="margin-top:0">— or % of total</label>
+        <input type="number" id="ec-percent" placeholder="e.g. 50" min="0" max="100" step="1" oninput="syncContribInput('percent')">
+      </div>
+    </div>
+    <div id="ec-error" class="error-msg" style="display:none"></div>
+    <button class="btn btn-primary btn-full" onclick="doAddContribution()">Add Contribution</button>
+  </div>
+</div>
+
+<!-- ============ MODAL: INVITE / JOIN REQUESTS ============ -->
+<div class="modal-overlay" id="modal-invite" onclick="closeModalIfOutside(event,'modal-invite')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Share & Requests</div>
+    <p style="color:var(--muted); font-size:0.85rem; margin-bottom:0.5rem;">Share this code with flatmates so they can request to join.</p>
+    <div class="invite-code-box">
+      <span id="invite-code-display" class="invite-code-text"></span>
+      <button class="btn btn-sm btn-secondary" onclick="copyInviteCode()">Copy</button>
+    </div>
+    <div id="copy-success" class="success-msg" style="display:none; text-align:center; margin-top:0.5rem;">Copied!</div>
+
+    <div id="join-requests-section" style="margin-top:1.25rem; display:none;">
+      <div style="font-family:'Syne',sans-serif; font-weight:700; font-size:1rem; margin-bottom:0.75rem; color:var(--overdue);">⚠ Pending Join Requests</div>
+      <div id="join-requests-list"></div>
+    </div>
+
+    <button class="btn btn-secondary btn-full" onclick="closeModal('modal-invite')">Close</button>
+  </div>
+</div>
+
+<!-- ============ MODAL: MEMBERS ============ -->
+<div class="modal-overlay" id="modal-members" onclick="closeModalIfOutside(event,'modal-members')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Flat Members</div>
+    <div id="members-list"></div>
+    <button class="btn btn-secondary btn-full" onclick="closeModal('modal-members')">Close</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA STORE
+// ============================================================
+const DB = {
+  get: (key, fb=null) => { try { const v=localStorage.getItem(key); return v?JSON.parse(v):fb; } catch { return fb; } },
+  set: (key,val) => localStorage.setItem(key, JSON.stringify(val)),
+};
+const USERS_KEY='flatpay_users', FLATS_KEY='flatpay_flats', SESSION_KEY='flatpay_session';
+const getUsers=()=>DB.get(USERS_KEY,{});
+const saveUsers=u=>DB.set(USERS_KEY,u);
+const getFlats=()=>DB.get(FLATS_KEY,{});
+const saveFlats=f=>DB.set(FLATS_KEY,f);
+const getSession=()=>DB.get(SESSION_KEY,null);
+const saveSession=s=>DB.set(SESSION_KEY,s);
+const clearSession=()=>localStorage.removeItem(SESSION_KEY);
+
+// ============================================================
+// STATE
+// ============================================================
+let currentUser=null, currentFlat=null, currentExpenseId=null;
+
+// ============================================================
+// INIT
+// ============================================================
+window.onload=()=>{
+  const sess=getSession();
+  if(sess){
+    const users=getUsers();
+    if(users[sess.username]){
+      currentUser=sess;
+      const userData=users[sess.username];
+      if(userData.pendingFlatId && !userData.flatId){
+        // Still waiting
+        currentUser.pendingFlatId=userData.pendingFlatId;
+        document.getElementById('pending-flat-name').textContent=userData.pendingFlatName||'the flat';
+        showScreen('screen-join-pending');
+        return;
+      }
+      loadCurrentFlat();
+      if(currentFlat){ showDashboard(); return; }
+      else{ document.getElementById('welcome-name').textContent=currentUser.username; showScreen('screen-flat-choice'); return; }
+    }
+  }
+  showScreen('screen-auth');
+};
+
+function loadCurrentFlat(){
+  if(!currentUser) return;
+  const users=getUsers();
+  const flats=getFlats();
+  const ud=users[currentUser.username];
+  if(ud&&ud.flatId){
+    currentUser.flatId=ud.flatId;
+    currentFlat=flats[ud.flatId]||null;
+  }
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='screen-account') showAccountScreen();
+}
+
+// ============================================================
+// AUTH
+// ============================================================
+function switchAuthTab(tab){
+  document.querySelectorAll('#screen-auth .tab').forEach((t,i)=>{ t.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='register')); });
+  document.getElementById('auth-login').style.display=tab==='login'?'':'none';
+  document.getElementById('auth-register').style.display=tab==='register'?'':'none';
+}
+
+function toggleHelp(){
+  const el=document.getElementById('help-alert');
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+
+function doLogin(){
+  const username=document.getElementById('login-username').value.trim().toLowerCase();
+  const password=document.getElementById('login-password').value;
+  const err=document.getElementById('login-error'); err.style.display='none';
+  if(!username||!password){ showErr(err,'Please fill in all fields.'); return; }
+  const users=getUsers();
+  if(!users[username]||users[username].password!==btoa(password)){ showErr(err,'Invalid username or password.'); return; }
+  currentUser={username};
+  saveSession(currentUser);
+  const ud=users[username];
+  if(ud.pendingFlatId && !ud.flatId){
+    currentUser.pendingFlatId=ud.pendingFlatId;
+    document.getElementById('pending-flat-name').textContent=ud.pendingFlatName||'the flat';
+    showScreen('screen-join-pending');
+    return;
+  }
+  loadCurrentFlat();
+  if(currentFlat){ showDashboard(); }
+  else{ document.getElementById('welcome-name').textContent=username; showScreen('screen-flat-choice'); }
+}
+
+function doRegister(){
+  const username=document.getElementById('reg-username').value.trim().toLowerCase();
+  const password=document.getElementById('reg-password').value;
+  const err=document.getElementById('reg-error'); err.style.display='none';
+  if(!username||!password){ showErr(err,'Please fill in all fields.'); return; }
+  if(username.length<3){ showErr(err,'Username must be at least 3 characters.'); return; }
+  if(password.length<4){ showErr(err,'Password must be at least 4 characters.'); return; }
+  const users=getUsers();
+  if(users[username]){ showErr(err,'Username already taken.'); return; }
+  users[username]={password:btoa(password),flatId:null};
+  saveUsers(users);
+  currentUser={username};
+  saveSession(currentUser);
+  document.getElementById('welcome-name').textContent=username;
+  showScreen('screen-flat-choice');
+}
+
+function doLogout(){
+  currentUser=null; currentFlat=null;
+  clearSession();
+  showScreen('screen-auth');
+}
+
+// ============================================================
+// JOIN WITH APPROVAL FLOW
+// ============================================================
+function doRequestJoin(){
+  const code=document.getElementById('invite-code-input').value.trim().toUpperCase();
+  const room=document.getElementById('join-room-input').value.trim();
+  const err=document.getElementById('join-error'); err.style.display='none';
+  if(!code){ showErr(err,'Please enter an invite code.'); return; }
+  if(!room){ showErr(err,'Please enter your name or room.'); return; }
+  const flats=getFlats();
+  const flat=Object.values(flats).find(f=>f.inviteCode===code);
+  if(!flat){ showErr(err,'No flat found with that code.'); return; }
+
+  // Already a member?
+  if(flat.members.find(m=>m.username===currentUser.username)){
+    const users=getUsers();
+    users[currentUser.username].flatId=flat.id;
+    users[currentUser.username].room=room;
+    saveUsers(users);
+    currentUser.flatId=flat.id;
+    saveSession(currentUser);
+    currentFlat=flat;
+    showDashboard();
+    return;
+  }
+
+  // Add join request
+  if(!flat.joinRequests) flat.joinRequests=[];
+  const existing=flat.joinRequests.find(r=>r.username===currentUser.username);
+  if(!existing) flat.joinRequests.push({username:currentUser.username, room, requestedAt:new Date().toISOString()});
+  flats[flat.id]=flat;
+  saveFlats(flats);
+
+  // Mark user as pending
+  const users=getUsers();
+  users[currentUser.username].pendingFlatId=flat.id;
+  users[currentUser.username].pendingFlatName=flat.name;
+  saveUsers(users);
+  currentUser.pendingFlatId=flat.id;
+
+  document.getElementById('pending-flat-name').textContent=flat.name;
+  showScreen('screen-join-pending');
+}
+
+function checkPendingApproval(){
+  const users=getUsers();
+  const ud=users[currentUser.username];
+  const statusEl=document.getElementById('pending-status');
+  if(ud.flatId){
+    // Approved!
+    currentUser.flatId=ud.flatId;
+    delete currentUser.pendingFlatId;
+    saveSession(currentUser);
+    loadCurrentFlat();
+    showDashboard();
+  } else {
+    statusEl.textContent='Still waiting for approval…';
+    setTimeout(()=>statusEl.textContent='',3000);
+  }
+}
+
+// ============================================================
+// FLAT CREATION
+// ============================================================
+function generateCode(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code='FLAT-';
+  for(let i=0;i<4;i++) code+=chars[Math.floor(Math.random()*chars.length)];
+  return code;
+}
+
+function doCreateFlat(){
+  const name=document.getElementById('flat-name-input').value.trim();
+  const room=document.getElementById('flat-room-input').value.trim();
+  const period=document.getElementById('flat-period-select').value;
+  const err=document.getElementById('create-flat-error'); err.style.display='none';
+  if(!name){ showErr(err,'Please enter a flat name.'); return; }
+  if(!room){ showErr(err,'Please enter your room/name.'); return; }
+
+  const flatId='flat_'+Date.now();
+  const flat={
+    id:flatId, name, period,
+    inviteCode:generateCode(),
+    members:[{username:currentUser.username,room}],
+    joinRequests:[],
+    expenses:[],
+  };
+  const flats=getFlats();
+  flats[flatId]=flat;
+  saveFlats(flats);
+  const users=getUsers();
+  users[currentUser.username].flatId=flatId;
+  users[currentUser.username].room=room;
+  saveUsers(users);
+  currentUser.flatId=flatId;
+  saveSession(currentUser);
+  currentFlat=flat;
+  showDashboard();
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function showDashboard(){
+  showScreen('screen-dashboard');
+  renderDashboard();
+}
+
+function renderDashboard(){
+  if(!currentFlat) return;
+  currentFlat=getFlats()[currentFlat.id];
+  if(!currentFlat) return;
+
+  // Profile button initial
+  const pb=document.getElementById('profile-btn');
+  pb.textContent=currentUser.username[0].toUpperCase();
+
+  document.getElementById('hero-flat-name').textContent=currentFlat.name;
+  document.getElementById('total-period-label').textContent=currentFlat.period==='weekly'?'Weekly':'Monthly';
+
+  const myRoom=currentFlat.members.find(m=>m.username===currentUser.username)?.room||currentUser.username;
+  let totalRecurring=0, myShare=0;
+  currentFlat.expenses.filter(e=>e.type==='recurring').forEach(e=>{
+    totalRecurring+=e.amount;
+    const c=(e.contributors||[]).find(x=>x.person===myRoom);
+    if(c) myShare+=c.amount;
+  });
+  currentFlat.expenses.filter(e=>e.type==='oneoff').forEach(e=>{
+    const c=(e.contributors||[]).find(x=>x.person===myRoom);
+    if(c) myShare+=c.amount;
+  });
+
+  document.getElementById('total-amount').textContent='$'+totalRecurring.toFixed(2);
+  document.getElementById('your-share').textContent='$'+myShare.toFixed(2);
+
+  renderExpenseList('recurring-list', currentFlat.expenses.filter(e=>e.type==='recurring'));
+  renderExpenseList('oneoff-list', currentFlat.expenses.filter(e=>e.type==='oneoff'));
+
+  // Join requests badge
+  const pending=(currentFlat.joinRequests||[]).length;
+  ['invite-badge','invite-badge-bottom'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){ el.style.display=pending>0?'flex':'none'; el.textContent=pending; }
+  });
+}
+
+function getExpenseStatus(expense){
+  const total=expense.amount;
+  const paid=(expense.contributors||[]).reduce((s,c)=>s+c.amount,0);
+  if(paid===0){
+    if(expense.type==='oneoff'&&expense.dueDate&&new Date(expense.dueDate)<new Date()) return 'overdue';
+    return 'notstarted';
+  }
+  if(paid>=total-0.01) return 'paid';
+  if(expense.type==='oneoff'&&expense.dueDate&&new Date(expense.dueDate)<new Date()) return 'overdue';
+  return 'partial';
+}
+
+function statusLabel(s){ return {paid:'✓ Paid',overdue:'⚠ Overdue',partial:'● Partial',notstarted:'○ Not Started'}[s]||s; }
+
+function renderExpenseList(containerId, expenses){
+  const container=document.getElementById(containerId);
+  if(!expenses.length){
+    const type=containerId.includes('recurring')?'recurring':'one-off';
+    container.innerHTML=`<div class="empty-state"><div class="empty-state-icon">${type==='recurring'?'📋':'🧾'}</div><div class="empty-state-text">No ${type} expenses yet.</div></div>`;
+    return;
+  }
+  container.innerHTML=expenses.map(e=>{
+    const status=getExpenseStatus(e);
+    return `<div class="expense-item" onclick="openExpenseDetail('${e.id}')">
+      <div class="expense-item-left">
+        <div class="expense-item-name">${escHtml(e.name)}</div>
+        <div class="expense-item-meta">${e.type==='recurring'?(e.period||currentFlat.period):(e.dueDate||'one-off')} · ${(e.contributors||[]).length} contributor${(e.contributors||[]).length!==1?'s':''}</div>
+      </div>
+      <div class="expense-item-right">
+        <div class="expense-item-amount">$${e.amount.toFixed(2)}</div>
+        <span class="status-badge status-${status}">${statusLabel(status)}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// ADD EXPENSE
+// ============================================================
+function openAddExpenseModal(type){
+  document.getElementById('add-expense-type').value=type;
+  document.getElementById('modal-add-expense-title').textContent=type==='recurring'?'Add Recurring Expense':'Add One-Off Expense';
+  document.getElementById('ae-period-wrap').style.display=type==='recurring'?'':'none';
+  document.getElementById('ae-duedate-wrap').style.display=type==='oneoff'?'':'none';
+  document.getElementById('ae-period').value=currentFlat.period;
+  document.getElementById('ae-name').value='';
+  document.getElementById('ae-amount').value='';
+  document.getElementById('ae-error').style.display='none';
+  openModal('modal-add-expense');
+}
+
+function doAddExpense(){
+  const name=document.getElementById('ae-name').value.trim();
+  const amount=parseFloat(document.getElementById('ae-amount').value);
+  const type=document.getElementById('add-expense-type').value;
+  const err=document.getElementById('ae-error'); err.style.display='none';
+  if(!name){ showErr(err,'Please enter a name.'); return; }
+  if(isNaN(amount)||amount<=0){ showErr(err,'Please enter a valid amount.'); return; }
+  const expense={id:'exp_'+Date.now(), name, amount, type, contributors:[], createdAt:new Date().toISOString()};
+  if(type==='recurring') expense.period=document.getElementById('ae-period').value;
+  else expense.dueDate=document.getElementById('ae-duedate').value||null;
+  const flats=getFlats();
+  currentFlat.expenses.push(expense);
+  flats[currentFlat.id]=currentFlat;
+  saveFlats(flats);
+  closeModal('modal-add-expense');
+  renderDashboard();
+}
+
+// ============================================================
+// EXPENSE DETAIL
+// ============================================================
+function openExpenseDetail(expenseId){
+  currentExpenseId=expenseId;
+  const expense=currentFlat.expenses.find(e=>e.id===expenseId);
+  if(!expense) return;
+  document.getElementById('ed-name').textContent=expense.name;
+  const meta=expense.type==='recurring'
+    ?`$${expense.amount.toFixed(2)} · ${expense.period||currentFlat.period}`
+    :`$${expense.amount.toFixed(2)} · one-off${expense.dueDate?' · due '+expense.dueDate:''}`;
+  document.getElementById('ed-meta').textContent=meta;
+  refreshExpenseDetailUI(expense);
+  const sel=document.getElementById('ec-person');
+  sel.innerHTML=currentFlat.members.map(m=>`<option value="${escHtml(m.room)}">${escHtml(m.room)} (${escHtml(m.username)})</option>`).join('');
+  document.getElementById('ec-amount').value='';
+  document.getElementById('ec-percent').value='';
+  document.getElementById('ec-error').style.display='none';
+  openModal('modal-expense-detail');
+}
+
+function refreshExpenseDetailUI(expense){
+  const paid=(expense.contributors||[]).reduce((s,c)=>s+c.amount,0);
+  const pct=Math.min(100,(paid/expense.amount)*100);
+  const status=getExpenseStatus(expense);
+  const statusColors={paid:'var(--paid)',overdue:'var(--overdue)',partial:'var(--partial)',notstarted:'var(--muted)'};
+  document.getElementById('ed-status').textContent=statusLabel(status);
+  document.getElementById('ed-status').className='status-badge status-'+status;
+  document.getElementById('ed-progress').style.width=pct+'%';
+  document.getElementById('ed-progress').style.background=statusColors[status]||'var(--muted)';
+  document.getElementById('ed-amounts').textContent=`$${paid.toFixed(2)} / $${expense.amount.toFixed(2)}`;
+  renderContributors(expense);
+}
+
+function renderContributors(expense){
+  const container=document.getElementById('ed-contributors');
+  if(!expense.contributors||!expense.contributors.length){
+    container.innerHTML=`<div style="color:var(--muted); font-size:0.85rem; padding:0.75rem 0;">No contributions yet.</div>`;
+    return;
+  }
+  container.innerHTML=expense.contributors.map(c=>{
+    const pct=((c.amount/expense.amount)*100).toFixed(0);
+    return `<div class="contributor-item">
+      <div class="avatar-row">
+        <div class="avatar">${c.person[0].toUpperCase()}</div>
+        <div>
+          <div class="contributor-name">${escHtml(c.person)}</div>
+          <div style="font-size:0.75rem; color:var(--muted);">${pct}% of total</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <div class="contributor-amount">$${c.amount.toFixed(2)}</div>
+        <button class="btn btn-ghost btn-sm" style="color:var(--overdue); padding:0.25rem 0.5rem;" onclick="removeContrib('${escHtml(c.person)}')">×</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function syncContribInput(changed){
+  const expense=currentFlat.expenses.find(e=>e.id===currentExpenseId);
+  if(!expense) return;
+  if(changed==='percent'){
+    const pct=parseFloat(document.getElementById('ec-percent').value);
+    if(!isNaN(pct)) document.getElementById('ec-amount').value=((pct/100)*expense.amount).toFixed(2);
+  } else {
+    const amt=parseFloat(document.getElementById('ec-amount').value);
+    if(!isNaN(amt)) document.getElementById('ec-percent').value=((amt/expense.amount)*100).toFixed(1);
+  }
+}
+
+function doAddContribution(){
+  const person=document.getElementById('ec-person').value;
+  const amount=parseFloat(document.getElementById('ec-amount').value);
+  const err=document.getElementById('ec-error'); err.style.display='none';
+  if(!person){ showErr(err,'Select a person.'); return; }
+  if(isNaN(amount)||amount<=0){ showErr(err,'Enter a valid amount.'); return; }
+  const flats=getFlats();
+  currentFlat=flats[currentFlat.id];
+  const expense=currentFlat.expenses.find(e=>e.id===currentExpenseId);
+  if(!expense) return;
+  const existing=expense.contributors.find(c=>c.person===person);
+  const prevAmount=existing?existing.amount:0;
+  const otherTotal=expense.contributors.filter(c=>c.person!==person).reduce((s,c)=>s+c.amount,0);
+  if(otherTotal+amount>expense.amount+0.01){ showErr(err,`Exceeds total. Max you can add: $${(expense.amount-otherTotal).toFixed(2)}`); return; }
+  if(existing) existing.amount=amount;
+  else expense.contributors.push({person,amount});
+  flats[currentFlat.id]=currentFlat;
+  saveFlats(flats);
+  document.getElementById('ec-amount').value='';
+  document.getElementById('ec-percent').value='';
+  refreshExpenseDetailUI(expense);
+  renderDashboard();
+}
+
+function removeContrib(person){
+  const flats=getFlats();
+  currentFlat=flats[currentFlat.id];
+  const expense=currentFlat.expenses.find(e=>e.id===currentExpenseId);
+  if(!expense) return;
+  expense.contributors=expense.contributors.filter(c=>c.person!==person);
+  flats[currentFlat.id]=currentFlat;
+  saveFlats(flats);
+  refreshExpenseDetailUI(expense);
+  renderDashboard();
+}
+
+function doDeleteExpense(){
+  if(!confirm('Delete this expense?')) return;
+  const flats=getFlats();
+  currentFlat=flats[currentFlat.id];
+  currentFlat.expenses=currentFlat.expenses.filter(e=>e.id!==currentExpenseId);
+  flats[currentFlat.id]=currentFlat;
+  saveFlats(flats);
+  closeModal('modal-expense-detail');
+  renderDashboard();
+}
+
+// ============================================================
+// INVITE + JOIN REQUESTS
+// ============================================================
+function showInviteModal(){
+  const flat=getFlats()[currentFlat.id];
+  document.getElementById('invite-code-display').textContent=flat.inviteCode;
+  document.getElementById('copy-success').style.display='none';
+
+  const requests=flat.joinRequests||[];
+  const reqSection=document.getElementById('join-requests-section');
+  const reqList=document.getElementById('join-requests-list');
+
+  if(requests.length>0){
+    reqSection.style.display='block';
+    reqList.innerHTML=requests.map(r=>`
+      <div class="join-request-item">
+        <div>
+          <div style="font-weight:600; font-size:0.9rem;">@${escHtml(r.username)}</div>
+          <div style="font-size:0.78rem; color:var(--muted);">Room: ${escHtml(r.room)}</div>
+        </div>
+        <div style="display:flex; gap:0.5rem;">
+          <button class="btn btn-sm btn-primary" onclick="approveJoin('${escHtml(r.username)}','${escHtml(r.room)}')">Approve</button>
+          <button class="btn btn-sm btn-danger" onclick="denyJoin('${escHtml(r.username)}')">Deny</button>
+        </div>
+      </div>
+    `).join('');
+  } else {
+    reqSection.style.display='none';
+  }
+
+  openModal('modal-invite');
+}
+
+function approveJoin(username, room){
+  const flats=getFlats();
+  const flat=flats[currentFlat.id];
+  flat.joinRequests=(flat.joinRequests||[]).filter(r=>r.username!==username);
+  flat.members.push({username, room});
+  flats[flat.id]=flat;
+  saveFlats(flats);
+  const users=getUsers();
+  if(users[username]){
+    users[username].flatId=flat.id;
+    users[username].room=room;
+    delete users[username].pendingFlatId;
+    delete users[username].pendingFlatName;
+    saveUsers(users);
+  }
+  currentFlat=flat;
+  showInviteModal(); // refresh modal
+  renderDashboard();
+}
+
+function denyJoin(username){
+  const flats=getFlats();
+  const flat=flats[currentFlat.id];
+  flat.joinRequests=(flat.joinRequests||[]).filter(r=>r.username!==username);
+  flats[flat.id]=flat;
+  saveFlats(flats);
+  const users=getUsers();
+  if(users[username]){
+    delete users[username].pendingFlatId;
+    delete users[username].pendingFlatName;
+    saveUsers(users);
+  }
+  currentFlat=flat;
+  showInviteModal();
+  renderDashboard();
+}
+
+function copyInviteCode(){
+  navigator.clipboard.writeText(currentFlat.inviteCode).then(()=>{
+    const el=document.getElementById('copy-success');
+    el.style.display='block';
+    setTimeout(()=>el.style.display='none',2000);
+  });
+}
+
+// ============================================================
+// MEMBERS MODAL
+// ============================================================
+function showMembersModal(){
+  const container=document.getElementById('members-list');
+  container.innerHTML=currentFlat.members.map(m=>`
+    <div class="contributor-item">
+      <div class="avatar-row">
+        <div class="avatar">${m.room[0].toUpperCase()}</div>
+        <div>
+          <div class="contributor-name">${escHtml(m.room)}</div>
+          <div style="font-size:0.75rem; color:var(--muted);">@${escHtml(m.username)}</div>
+        </div>
+      </div>
+      ${m.username===currentUser.username?'<span style="font-size:0.7rem;color:var(--accent);font-family:\'DM Mono\',monospace;">you</span>':''}
+    </div>
+  `).join('');
+  openModal('modal-members');
+}
+
+// ============================================================
+// ACCOUNT PAGE
+// ============================================================
+function showAccountScreen(){
+  const users=getUsers();
+  const ud=users[currentUser.username];
+  const myRoom=currentFlat?.members.find(m=>m.username===currentUser.username)?.room||currentUser.username;
+
+  document.getElementById('account-avatar').textContent=currentUser.username[0].toUpperCase();
+  document.getElementById('account-username').textContent=currentUser.username;
+  document.getElementById('account-flat-name').textContent=currentFlat?currentFlat.name:'No flat';
+  document.getElementById('account-room').textContent=myRoom?`Room: ${myRoom}`:'';
+
+  if(!currentFlat){ document.getElementById('account-upcoming').innerHTML='<p style="color:var(--muted);font-size:0.85rem;">Not in a flat yet.</p>'; document.getElementById('account-completed').innerHTML=''; return; }
+
+  const upcoming=[], completed=[];
+  currentFlat.expenses.forEach(e=>{
+    const myContrib=(e.contributors||[]).find(c=>c.person===myRoom);
+    if(!myContrib) return;
+    const status=getExpenseStatus(e);
+    const row={name:e.name, amount:myContrib.amount, status, type:e.type, dueDate:e.dueDate, period:e.period||currentFlat.period};
+    if(status==='paid') completed.push(row);
+    else upcoming.push(row);
+  });
+
+  const renderPaymentRow=(r)=>`<div class="payment-row">
+    <div>
+      <div style="font-weight:500; font-size:0.9rem;">${escHtml(r.name)}</div>
+      <div style="font-size:0.75rem; color:var(--muted);">${r.type==='recurring'?r.period:(r.dueDate?'Due '+r.dueDate:'one-off')}</div>
+    </div>
+    <div style="display:flex; align-items:center; gap:0.75rem;">
+      <span class="mono" style="font-size:0.9rem; color:var(--accent);">$${r.amount.toFixed(2)}</span>
+      <span class="status-badge status-${r.status}">${statusLabel(r.status)}</span>
+    </div>
+  </div>`;
+
+  document.getElementById('account-upcoming').innerHTML=upcoming.length
+    ?upcoming.map(renderPaymentRow).join('')
+    :'<p style="color:var(--muted);font-size:0.85rem;padding:0.5rem 0;">No upcoming payments — you\'re all good! 🎉</p>';
+
+  document.getElementById('account-completed').innerHTML=completed.length
+    ?completed.map(renderPaymentRow).join('')
+    :'<p style="color:var(--muted);font-size:0.85rem;padding:0.5rem 0;">No completed payments yet.</p>';
+}
+
+
+
+// ============================================================
+// MODAL HELPERS
+// ============================================================
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function closeModalIfOutside(e,id){ if(e.target.id===id) closeModal(id); }
+
+// ============================================================
+// UTILS
+// ============================================================
+function showErr(el,msg){ el.textContent=msg; el.style.display='block'; }
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>
