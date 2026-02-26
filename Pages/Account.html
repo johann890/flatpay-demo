@@ -1,0 +1,64 @@
+<div id="screen-account" class="screen">
+  <div class="topbar">
+    <button class="btn btn-ghost" onclick="showScreen('screen-dashboard')">
+      ← Back
+    </button>
+    <span class="topbar-title">My Account</span>
+    <button
+      class="btn btn-sm btn-ghost"
+      onclick="doLogout()"
+      style="color: var(--muted); font-size: 0.8rem"
+    >
+      Sign out
+    </button>
+  </div>
+  <div class="page-content" style="max-width: 500px; margin: 0 auto">
+    <!-- Profile section -->
+    <div
+      style="
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        padding: 1.5rem 0;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 1.5rem;
+      "
+    >
+      <div class="avatar-lg" id="account-avatar"></div>
+      <div>
+        <div
+          class="heading"
+          style="font-size: 1.4rem"
+          id="account-username"
+        ></div>
+        <div
+          style="color: var(--muted); font-size: 0.85rem"
+          id="account-flat-name"
+        ></div>
+        <div
+          style="
+            color: var(--muted);
+            font-size: 0.8rem;
+            font-family: &quot;DM Mono&quot;, monospace;
+            margin-top: 0.2rem;
+          "
+          id="account-room"
+        ></div>
+      </div>
+    </div>
+
+    <!-- Upcoming payments -->
+    <div class="section-title" style="margin-bottom: 0.75rem">
+      ⏰ Upcoming / Overdue
+    </div>
+    <div id="account-upcoming"></div>
+
+    <div class="divider"></div>
+
+    <!-- Completed payments -->
+    <div class="section-title" style="margin-bottom: 0.75rem">
+      ✅ Completed Payments
+    </div>
+    <div id="account-completed"></div>
+  </div>
+</div>

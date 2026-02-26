@@ -1,0 +1,32 @@
+<div id="screen-create-flat" class="screen">
+  <div class="topbar">
+    <button class="btn btn-ghost" onclick="showScreen('screen-flat-choice')">
+      ← Back
+    </button>
+    <span class="topbar-title">Create Flat</span>
+    <span></span>
+  </div>
+  <div class="page-content" style="max-width: 500px; margin: 0 auto">
+    <label>Flat Name</label>
+    <input
+      type="text"
+      id="flat-name-input"
+      placeholder="e.g. 42 Maple Street"
+    />
+    <label>Your Room / Name in Flat</label>
+    <input
+      type="text"
+      id="flat-room-input"
+      placeholder="e.g. Room 1 or Sarah"
+    />
+    <label>Default Period</label>
+    <select id="flat-period-select">
+      <option value="monthly">Monthly</option>
+      <option value="weekly">Weekly</option>
+    </select>
+    <div id="create-flat-error" class="error-msg" style="display: none"></div>
+    <button class="btn btn-primary btn-full" onclick="doCreateFlat()">
+      Create Flat
+    </button>
+  </div>
+</div>

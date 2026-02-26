@@ -1,0 +1,48 @@
+<div
+  class="modal-overlay"
+  id="modal-invite"
+  onclick="closeModalIfOutside(event, 'modal-invite')"
+>
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Share & Requests</div>
+    <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 0.5rem">
+      Share this code with flatmates so they can request to join.
+    </p>
+    <div class="invite-code-box">
+      <span id="invite-code-display" class="invite-code-text"></span>
+      <button class="btn btn-sm btn-secondary" onclick="copyInviteCode()">
+        Copy
+      </button>
+    </div>
+    <div
+      id="copy-success"
+      class="success-msg"
+      style="display: none; text-align: center; margin-top: 0.5rem"
+    >
+      Copied!
+    </div>
+
+    <div id="join-requests-section" style="margin-top: 1.25rem; display: none">
+      <div
+        style="
+          font-family: &quot;Syne&quot;, sans-serif;
+          font-weight: 700;
+          font-size: 1rem;
+          margin-bottom: 0.75rem;
+          color: var(--overdue);
+        "
+      >
+        ⚠ Pending Join Requests
+      </div>
+      <div id="join-requests-list"></div>
+    </div>
+
+    <button
+      class="btn btn-secondary btn-full"
+      onclick="closeModal('modal-invite')"
+    >
+      Close
+    </button>
+  </div>
+</div>

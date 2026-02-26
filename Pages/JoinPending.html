@@ -1,0 +1,42 @@
+<div id="screen-join-pending" class="screen">
+  <div class="center-wrap">
+    <div class="card" style="text-align: center">
+      <div style="font-size: 3rem; margin-bottom: 1rem">⏳</div>
+      <div class="heading" style="font-size: 1.2rem; margin-bottom: 0.75rem">
+        Request Sent!
+      </div>
+      <p
+        style="
+          color: var(--muted);
+          font-size: 0.85rem;
+          line-height: 1.6;
+          margin-bottom: 1.5rem;
+        "
+      >
+        Your request to join
+        <strong id="pending-flat-name" style="color: var(--text)"></strong> has
+        been sent.<br />
+        A current member needs to approve your request. Check back soon!
+      </p>
+      <button
+        class="btn btn-secondary btn-full"
+        style="margin-top: 0"
+        onclick="checkPendingApproval()"
+      >
+        Check Status
+      </button>
+      <div
+        id="pending-status"
+        style="margin-top: 0.75rem; font-size: 0.8rem; color: var(--muted)"
+      ></div>
+      <div class="divider"></div>
+      <button
+        class="btn btn-ghost"
+        onclick="doLogout()"
+        style="width: 100%; color: var(--muted); font-size: 0.85rem"
+      >
+        Sign out
+      </button>
+    </div>
+  </div>
+</div>

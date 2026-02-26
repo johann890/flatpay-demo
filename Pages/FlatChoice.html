@@ -1,0 +1,51 @@
+<div id="screen-flat-choice" class="screen">
+  <div class="center-wrap">
+    <div style="text-align: center; margin-bottom: 2rem">
+      <div class="logo">Flat<span>Pay</span></div>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-top: 0.5rem">
+        Welcome, <span id="welcome-name" style="color: var(--text)"></span>
+      </p>
+    </div>
+    <div class="card">
+      <div class="heading" style="font-size: 1.3rem; margin-bottom: 0.5rem">
+        Your Flat
+      </div>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 1.5rem">
+        Create a new flat or join one with an invite code.
+      </p>
+      <button
+        class="btn btn-primary btn-full"
+        style="margin-top: 0"
+        onclick="showScreen('screen-create-flat')"
+      >
+        + Create a Flat
+      </button>
+      <div class="divider"></div>
+      <label>Invite Code</label>
+      <input
+        type="text"
+        id="invite-code-input"
+        placeholder="e.g. FLAT-ABCD"
+        style="text-transform: uppercase; letter-spacing: 0.1em"
+      />
+      <label>Your name / room</label>
+      <input
+        type="text"
+        id="join-room-input"
+        placeholder="e.g. Room 2 or Jamie"
+      />
+      <div id="join-error" class="error-msg" style="display: none"></div>
+      <button class="btn btn-secondary btn-full" onclick="doRequestJoin()">
+        Request to Join
+      </button>
+      <div class="divider"></div>
+      <button
+        class="btn btn-ghost"
+        onclick="doLogout()"
+        style="width: 100%; color: var(--muted); font-size: 0.85rem"
+      >
+        Sign out
+      </button>
+    </div>
+  </div>
+</div>
