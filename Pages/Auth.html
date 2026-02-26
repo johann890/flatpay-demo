@@ -1,0 +1,82 @@
+<div id="screen-auth" class="screen active">
+  <div class="center-wrap">
+    <div style="text-align: center; margin-bottom: 2rem">
+      <div class="logo">Flat<span>Pay</span></div>
+      <div class="slogan">Split the bills, not the friendship.</div>
+    </div>
+    <div class="card">
+      <div class="tabs">
+        <button class="tab active" onclick="switchAuthTab('login')">
+          Sign In
+        </button>
+        <button class="tab" onclick="switchAuthTab('register')">
+          Register
+        </button>
+      </div>
+
+      <div id="auth-login">
+        <label>Username</label>
+        <input
+          type="text"
+          id="login-username"
+          placeholder="your username"
+          autocomplete="username"
+        />
+        <label>Password</label>
+        <input
+          type="password"
+          id="login-password"
+          placeholder="••••••••"
+          autocomplete="current-password"
+        />
+        <div id="login-error" class="error-msg" style="display: none"></div>
+        <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem">
+          <button class="btn btn-primary" style="flex: 1" onclick="doLogin()">
+            Sign In
+          </button>
+          <button
+            class="help-btn"
+            onclick="toggleHelp()"
+            title="What is FlatPay?"
+          >
+            ?
+          </button>
+        </div>
+        <div id="help-alert" class="help-alert" style="display: none">
+          <strong
+            style="
+              color: var(--accent);
+              font-family: &quot;Syne&quot;, sans-serif;
+            "
+            >Welcome to FlatPay 👋</strong
+          ><br />
+          FlatPay helps flatmates manage shared expenses — rent, utilities,
+          subscriptions, and more. Create a flat, add your bills, and track
+          who's paying what. Invite your flatmates with a share code and stay on
+          top of every payment together.
+        </div>
+      </div>
+
+      <div id="auth-register" style="display: none">
+        <label>Username</label>
+        <input
+          type="text"
+          id="reg-username"
+          placeholder="choose a username"
+          autocomplete="username"
+        />
+        <label>Password</label>
+        <input
+          type="password"
+          id="reg-password"
+          placeholder="choose a password"
+          autocomplete="new-password"
+        />
+        <div id="reg-error" class="error-msg" style="display: none"></div>
+        <button class="btn btn-primary btn-full" onclick="doRegister()">
+          Create Account
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
